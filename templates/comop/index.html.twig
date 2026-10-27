@@ -1,0 +1,158 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Liste des Comops | OTI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold" style="color: var(--oti-blue);">Liste des Comops</h4>
+        <p class="text-muted small mb-0">Gestion et suivi des commandes</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_comop_import_excel') }}" class="btn btn-outline-primary btn-sm px-3" style="color: var(--oti-blue); border-color: var(--oti-blue);">
+            <i class="bi bi-upload me-1"></i> Importer
+        </a>
+        <a href="{{ path('app_comop_export_excel') }}" class="btn btn-outline-success btn-sm px-3">
+            <i class="bi bi-file-earmark-excel me-1"></i> Exporter
+        </a>
+        <a href="{{ path('app_comop_new') }}" class="btn btn-primary btn-sm px-3" style="background-color: var(--oti-blue); border-color: var(--oti-blue);">
+            <i class="bi bi-plus-lg me-1"></i> Nouveau
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% set total_mga = comops|reduce((carry, c) => carry + c.montant, 0) %}
+{% set nb_payes = comops|filter(c => (c.statut|lower) in ['payé', 'paye'])|length %}
+{% set nb_attente = comops|filter(c => (c.statut|lower) == 'en attente')|length %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="stat-icon blue"><i class="bi bi-receipt"></i></div>
+            <div>
+                <div class="stat-label">Total Comops</div>
+                <div class="stat-value">{{ comops|length }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="stat-icon orange"><i class="bi bi-cash-stack"></i></div>
+            <div>
+                <div class="stat-label">Montant cumulé</div>
+                <div class="stat-value">{{ total_mga|number_format(0, ',', ' ') }} <small class="fs-6 text-muted fw-semibold">MGA</small></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+            <div>
+                <div class="stat-label">Payés</div>
+                <div class="stat-value">{{ nb_payes }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="stat-icon amber"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+                <div class="stat-label">En attente</div>
+                <div class="stat-value">{{ nb_attente }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="search" id="comop-search" class="form-control form-control-sm" placeholder="Rechercher un projet, un fournisseur, une référence…">
+        </div>
+        <span class="text-muted small"><span id="comop-count">{{ comops|length }}</span> résultat(s)</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="comop-table">
+            <thead>
+                <tr>
+                    <th class="ps-4">Réf. BC</th>
+                    <th>Projet</th>
+                    <th>Fournisseur</th>
+                    <th class="text-end">Montant</th>
+                    <th>Statut</th>
+                    <th>Paiement</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for comop in comops %}
+                <tr class="comop-row">
+                    <td class="ps-4">
+                        <a href="{{ path('app_comop_show', {'id': comop.id}) }}" class="fw-semibold text-decoration-none" style="color: var(--oti-blue);">{{ comop.refBc }}</a>
+                    </td>
+                    <td>{{ comop.projet }}</td>
+                    <td class="text-muted">{{ comop.fournisseur }}</td>
+                    <td class="text-end">
+                        <span class="fw-semibold">{{ comop.montant|number_format(0, ',', ' ') }}</span>
+                        <small class="text-muted">MGA</small>
+                    </td>
+                    <td>{{ include('comop/_statut_badge.html.twig', {statut: comop.statut}) }}</td>
+                    <td class="text-muted small">
+                        {% if comop.datePaiement %}
+                            <i class="bi bi-calendar3 me-1"></i>{{ comop.datePaiement|date('d/m/Y') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="d-inline-flex gap-1">
+                            <a href="{{ path('app_comop_show', {'id': comop.id}) }}" class="action-btn" title="Voir les détails" data-bs-toggle="tooltip">
+                                <i class="bi bi-eye" style="color: var(--oti-blue);"></i>
+                            </a>
+                            <a href="{{ path('app_comop_edit', {'id': comop.id}) }}" class="action-btn edit" title="Modifier" data-bs-toggle="tooltip">
+                                <i class="bi bi-pencil" style="color: var(--oti-orange);"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <div class="fw-semibold mb-1">Aucun Comop pour le moment</div>
+                            <a href="{{ path('app_comop_new') }}" class="btn-oti btn-sm mt-2"><i class="bi bi-plus-lg me-1"></i> Créer le premier</a>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+        const input = document.getElementById('comop-search');
+        const rows = document.querySelectorAll('.comop-row');
+        const count = document.getElementById('comop-count');
+        if (!input) return;
+        input.addEventListener('input', () => {
+            const q = input.value.trim().toLowerCase();
+            let visible = 0;
+            rows.forEach(r => {
+                const show = r.textContent.toLowerCase().includes(q);
+                r.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            count.textContent = visible;
+        });
+    });
+</script>
+{% endblock %}

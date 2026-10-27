@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion | OTI{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+<div class="auth-card">
+    <div class="auth-logo">
+        <img src="{{ asset('images/Logo_OTI.png') }}" alt="OTI">
+    </div>
+
+    <h2 class="text-center mb-1" style="font-size: 1.5rem; color: #333;">Bienvenue</h2>
+    <p class="text-center text-muted small mb-4">Connectez-vous pour accéder à votre espace</p>
+
+    {# Gestion des erreurs d'authentification #}
+    {% if error %}
+        <div class="alert alert-danger d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+            <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        </div>
+    {% endif %}
+
+    {# Si déjà connecté #}
+    {% if app.user %}
+        <div class="alert alert-info text-center">
+            Vous êtes connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>.<br>
+            <a href="{{ logout_path() }}" class="auth-link">Se déconnecter</a>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {# Email #}
+        <div class="mb-3">
+            <label for="inputEmail" class="form-label">Adresse Email</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" value="{{ last_username }}" name="email" id="inputEmail" 
+                       class="form-control border-start-0" autocomplete="email" 
+                       placeholder="nom@exemple.com" required autofocus>
+            </div>
+        </div>
+
+        {# Password avec toggle #}
+        <div class="mb-3">
+            <div class="d-flex justify-content-between">
+                <label for="inputPassword" class="form-label">Mot de passe</label>
+            </div>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" name="password" id="inputPassword" 
+                       class="form-control border-start-0 border-end-0" 
+                       autocomplete="current-password" placeholder="••••••••" required>
+                <button class="btn btn-outline-secondary" type="button" 
+                        id="togglePassword" aria-label="Afficher le mot de passe">
+                    <i class="bi bi-eye" id="toggleIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+        {# Remember me #}
+        <div class="form-check mb-4">
+            <input type="checkbox" name="_remember_me" id="remember_me" class="form-check-input">
+            <label for="remember_me" class="form-check-label text-muted small">Se souvenir de moi</label>
+        </div>
+        <input type="hidden" name="_target_path" value="{{ path('app_comop_index') }}">
+        <button class="btn-oti" type="submit">
+            <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
+        </button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('togglePassword');
+        const pwdInput = document.getElementById('inputPassword');
+        const icon = document.getElementById('toggleIcon');
+
+        toggleBtn.addEventListener('click', () => {
+            const isPassword = pwdInput.type === 'password';
+            pwdInput.type = isPassword ? 'text' : 'password';
+            icon.classList.toggle('bi-eye');
+            icon.classList.toggle('bi-eye-slash');
+        });
+    });
+</script>
+{% endblock %}

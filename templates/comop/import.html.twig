@@ -1,0 +1,71 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Importer Comops | OTI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex align-items-center mb-3">
+    <a href="{{ path('app_comop_index') }}" class="btn btn-light btn-sm me-3" title="Retour">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+        <h4 class="mb-0 fw-bold" style="color: var(--oti-blue);">Importer des Comops</h4>
+        <p class="text-muted small mb-0">Chargez un fichier Excel pour importer en masse</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    {# Card Upload #}
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-file-earmark-excel me-2 text-success"></i> Fichier Excel
+            </div>
+            <div class="card-body p-4">
+                {{ form_start(form) }}
+                    <div class="mb-3">
+                        {{ form_label(form.file) }}
+                        {{ form_widget(form.file) }}
+                        {{ form_errors(form.file) }}
+                        <div class="form-text">
+                            Formats acceptés : <strong>.xlsx</strong>, <strong>.xls</strong> (5 Mo max).
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{{ path('app_comop_index') }}" class="btn btn-light btn-sm px-3">Annuler</a>
+                        <button class="btn btn-success btn-sm px-3">
+                            <i class="bi bi-upload me-1"></i> Lancer l'import
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+    {# Card Instructions #}
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2" style="color: var(--oti-orange);"></i> Format attendu
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    Le fichier doit contenir les colonnes suivantes, <strong>dans cet ordre :</strong>
+                </p>
+                <ol class="small ps-3 mb-3">
+                    <li><strong>Projet</strong> <span class="text-danger">*</span></li>
+                    <li><strong>Réf. BC</strong> <span class="text-danger">*</span></li>
+                    <li>Fournisseur</li>
+                    <li>Désignation</li>
+                    <li>Montant (MGA)</li>
+                    <li>Montant (USD)</li>
+                    <li>Statut</li>
+                    <li>DT</li>
+                    <li>Date Paiement</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

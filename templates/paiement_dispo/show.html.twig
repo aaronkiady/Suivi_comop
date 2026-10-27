@@ -1,0 +1,131 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Détails Paiement | OTI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center">
+        <a href="{{ path('app_paiement_dispo_index') }}" class="btn btn-light btn-sm me-3" title="Retour">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4 class="mb-0 fw-bold" style="color: var(--oti-blue);">Paiement #{{ paiement_dispo.id }}</h4>
+            <p class="text-muted small mb-0">Réf. {{ paiement_dispo.reference ?? '—' }}</p>
+        </div>
+    </div>
+    <a href="{{ path('app_paiement_dispo_edit', {'id': paiement_dispo.id}) }}" class="btn btn-primary btn-sm px-3" style="background-color: var(--oti-blue); border-color: var(--oti-blue);">
+        <i class="bi bi-pencil me-1"></i> Modifier
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+
+    {# Card Montants #}
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-cash-coin me-2" style="color: var(--oti-orange);"></i> Montants
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted text-uppercase fw-bold d-block" style="letter-spacing: 1px; font-size: 0.7rem;">Ariary</small>
+                    <div class="fs-5 fw-bold" style="color: var(--oti-blue);">
+                        {{ paiement_dispo.ariary is not null ? paiement_dispo.ariary|number_format(0, ',', ' ') ~ ' Ar' : '—' }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted text-uppercase fw-bold d-block" style="letter-spacing: 1px; font-size: 0.7rem;">Euro</small>
+                    <div class="fs-5 fw-bold" style="color: var(--oti-orange);">
+                        {{ paiement_dispo.euro is not null ? '€' ~ paiement_dispo.euro|number_format(0, ',', ' ') : '—' }}
+                    </div>
+                </div>
+                <div>
+                    <small class="text-muted text-uppercase fw-bold d-block" style="letter-spacing: 1px; font-size: 0.7rem;">Dollar</small>
+                    <div class="fs-5 fw-bold" style="color: #198754;">
+                        {{ paiement_dispo.dollar is not null ? '$' ~ paiement_dispo.dollar|number_format(0, ',', ' ') : '—' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Card Détails #}
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2" style="color: var(--oti-orange);"></i> Détails du paiement
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small" style="width: 35%;">Date d'établissement</th>
+                            <td>{{ paiement_dispo.dateEtablissement ? paiement_dispo.dateEtablissement|date('d/m/Y') : '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small">Type de paiement</th>
+                            <td>{{ paiement_dispo.typePaiement ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small">Banque</th>
+                            <td>{{ paiement_dispo.banque ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small">Société</th>
+                            <td>{{ paiement_dispo.societe ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small">Référence</th>
+                            <td class="fw-semibold" style="color: var(--oti-blue);">{{ paiement_dispo.reference ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small">Échéance traite</th>
+                            <td>{{ paiement_dispo.echeanceTraite ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small">Fournisseur</th>
+                            <td>{{ paiement_dispo.fournisseurs ?? '—' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {# Card Suivi #}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clipboard-check me-2" style="color: var(--oti-orange);"></i> Suivi
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 1px; font-size: 0.7rem;">Statut Swift</small>
+                        {% if paiement_dispo.statutSwift %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">{{ paiement_dispo.statutSwift }}</span>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 1px; font-size: 0.7rem;">Statut paiement</small>
+                        {% if paiement_dispo.statPaiement %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ paiement_dispo.statPaiement }}</span>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 1px; font-size: 0.7rem;">Pièces BC</small>
+                        <span class="small">{{ paiement_dispo.piecesBc ?? '—' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

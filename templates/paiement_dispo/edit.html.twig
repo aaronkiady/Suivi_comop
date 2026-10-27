@@ -1,0 +1,26 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Modifier Paiement | OTI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center">
+        <a href="{{ path('app_paiement_dispo_index') }}" class="btn btn-light btn-sm me-3" title="Retour">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4 class="mb-0 fw-bold" style="color: var(--oti-blue);">Modifier le Paiement</h4>
+            <p class="text-muted small mb-0">Réf. {{ paiement_dispo.reference ?? '—' }}</p>
+        </div>
+    </div>
+    {{ include('paiement_dispo/_delete_form.html.twig') }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        {{ include('paiement_dispo/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    </div>
+</div>
+{% endblock %}

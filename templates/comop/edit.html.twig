@@ -1,0 +1,26 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Modifier Comop | OTI{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{{ path('app_comop_index') }}" class="btn-back" title="Retour">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h1 class="page-title">Modifier le Comop</h1>
+            <p class="page-subtitle">Réf. BC : <strong>{{ comop.refBc }}</strong></p>
+        </div>
+    </div>
+    {{ include('comop/_delete_form.html.twig') }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        {{ include('comop/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Détails Comop | OTI{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{{ path('app_comop_index') }}" class="btn-back" title="Retour">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h1 class="page-title">Comop #{{ comop.id }}</h1>
+            <p class="page-subtitle">Réf. BC : <strong>{{ comop.refBc }}</strong></p>
+        </div>
+    </div>
+    <a href="{{ path('app_comop_edit', {'id': comop.id}) }}" class="btn-oti">
+        <i class="bi bi-pencil me-2"></i> Modifier
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+
+    <div class="col-lg-4">
+        <div class="d-flex flex-column gap-3 h-100">
+            <div class="card stat-card">
+                <div class="stat-icon blue"><i class="bi bi-cash-coin"></i></div>
+                <div>
+                    <div class="stat-label">Montant MGA</div>
+                    <div class="stat-value" style="color: var(--oti-blue);">
+                        {{ comop.montant|number_format(0, ',', ' ') }}
+                        <small class="fs-6 text-muted fw-semibold">Ar</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon orange"><i class="bi bi-currency-dollar"></i></div>
+                <div>
+                    <div class="stat-label">Montant USD</div>
+                    <div class="stat-value" style="color: var(--oti-orange);">
+                        ${{ comop.montantUsd|number_format(2, '.', ',') }}
+                    </div>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon green"><i class="bi bi-flag"></i></div>
+                <div>
+                    <div class="stat-label mb-1">Statut</div>
+                    {{ include('comop/_statut_badge.html.twig', {statut: comop.statut}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2" style="color: var(--oti-orange);"></i> Informations générales
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small" style="width: 35%;"><i class="bi bi-folder2-open me-2"></i>Projet</th>
+                            <td class="fw-semibold">{{ comop.projet }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small"><i class="bi bi-truck me-2"></i>Fournisseur</th>
+                            <td>{{ comop.fournisseur }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small"><i class="bi bi-card-text me-2"></i>Désignation</th>
+                            <td>{{ comop.designation }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small"><i class="bi bi-calendar-event me-2"></i>DT</th>
+                            <td>{{ comop.dt }}</td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 text-muted fw-normal small"><i class="bi bi-calendar-check me-2"></i>Date de paiement</th>
+                            <td>{{ comop.datePaiement ? comop.datePaiement|date('d/m/Y') : '—' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

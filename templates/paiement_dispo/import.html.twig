@@ -1,0 +1,106 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Importer Paiements | OTI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex align-items-center mb-3">
+    <a href="{{ path('app_paiement_dispo_index') }}" class="btn btn-light btn-sm me-3" title="Retour">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+        <h4 class="mb-0 fw-bold" style="color: var(--oti-blue);">Importer des Paiements</h4>
+        <p class="text-muted small mb-0">Chargez un fichier Excel pour importer en masse</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+
+    {# Colonne gauche : upload #}
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i class="bi bi-file-earmark-excel me-2 text-success fs-5"></i>
+                <span>Fichier à importer</span>
+            </div>
+            <div class="card-body p-4">
+                {{ form_start(form) }}
+                    <div class="mb-3">
+                        {{ form_label(form.file) }}
+                        {{ form_widget(form.file, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.file) }}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Formats acceptés : <strong>.xlsx</strong>, <strong>.xls</strong> — Max : <strong>5 Mo</strong>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning py-2 px-3 small mb-0">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <strong>Attention :</strong> l'import ajoute des lignes sans vérifier les doublons.
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{{ path('app_paiement_dispo_index') }}" class="btn btn-light btn-sm px-3">Annuler</a>
+                        <button class="btn btn-success btn-sm px-3">
+                            <i class="bi bi-upload me-1"></i> Lancer l'import
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+    {# Colonne droite : format attendu #}
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i class="bi bi-list-check me-2" style="color: var(--oti-orange);"></i>
+                <span>Format attendu</span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    Le fichier doit contenir <strong>14 colonnes</strong> dans cet ordre :
+                </p>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr><th class="small text-center" style="width: 40px;">#</th><th class="small">Colonne</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="text-center small text-muted">A</td><td class="small">ID</td></tr>
+                            <tr><td class="text-center small text-muted">B</td><td class="small">Date Etablissement</td></tr>
+                            <tr><td class="text-center small text-muted">C</td><td class="small">Type Paiement</td></tr>
+                            <tr><td class="text-center small text-muted">D</td><td class="small">Banque</td></tr>
+                            <tr><td class="text-center small text-muted">E</td><td class="small">Société</td></tr>
+                            <tr><td class="text-center small text-muted">F</td><td class="small">Référence</td></tr>
+                            <tr><td class="text-center small text-muted">G</td><td class="small">Échéance Traite</td></tr>
+                            <tr><td class="text-center small text-muted">H</td><td class="small">Fournisseurs</td></tr>
+                            <tr><td class="text-center small text-muted">I</td><td class="small">Ariary</td></tr>
+                            <tr><td class="text-center small text-muted">J</td><td class="small">Euro</td></tr>
+                            <tr><td class="text-center small text-muted">K</td><td class="small">Dollar</td></tr>
+                            <tr><td class="text-center small text-muted">L</td><td class="small">Statut Swift</td></tr>
+                            <tr><td class="text-center small text-muted">M</td><td class="small">Statut Paiement</td></tr>
+                            <tr><td class="text-center small text-muted">N</td><td class="small">Pièces BC</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <a href="{{ path('app_paiement_dispo_import_template') }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-download me-1"></i> Télécharger le modèle Excel
+                    </a>
+                </div>
+
+                <div class="alert alert-info py-2 px-3 small mb-0">
+                    <i class="bi bi-lightbulb me-1"></i>
+                    <strong>Astuce :</strong> utilisez le bouton <em>Exporter Excel</em> pour obtenir un fichier au bon format.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

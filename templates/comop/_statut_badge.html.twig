@@ -1,0 +1,8 @@
+{% set s = (statut|default(''))|lower %}
+{% if s == 'payé' or s == 'paye' %}
+    <span class="badge-soft success">Payé</span>
+{% elseif s == 'en attente' %}
+    <span class="badge-soft warning">En attente</span>
+{% else %}
+    <span class="badge-soft secondary">{{ statut ?: '—' }}</span>
+{% endif %}

@@ -1,0 +1,111 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Liste des Paiements Disponibles | OTI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold" style="color: var(--oti-blue);">Paiements Disponibles</h4>
+        <p class="text-muted small mb-0">Gestion et suivi des paiements</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_paiement_dispo_import_excel') }}" class="btn btn-outline-primary btn-sm px-3" style="color: var(--oti-blue); border-color: var(--oti-blue);">
+            <i class="bi bi-upload me-1"></i> Importer
+        </a>
+        <a href="{{ path('app_paiement_dispo_export_excel') }}" class="btn btn-outline-success btn-sm px-3">
+            <i class="bi bi-file-earmark-excel me-1"></i> Exporter
+        </a>
+        <a href="{{ path('app_paiement_dispo_new') }}" class="btn btn-primary btn-sm px-3" style="background-color: var(--oti-blue); border-color: var(--oti-blue);">
+            <i class="bi bi-plus-lg me-1"></i> Nouveau
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4 py-3">Date</th>
+                        <th class="py-3">Type</th>
+                        <th class="py-3">Banque</th>
+                        <th class="py-3">Référence</th>
+                        <th class="py-3">Fournisseur</th>
+                        <th class="py-3 text-end">Ariary</th>
+                        <th class="py-3 text-end">Euro</th>
+                        <th class="py-3 text-end">Dollar</th>
+                        <th class="py-3">Statut</th>
+                        <th class="text-end pe-4 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for paiement_dispo in paiement_dispos %}
+                    <tr>
+                        <td class="ps-4 small">
+                            {{ paiement_dispo.dateEtablissement ? paiement_dispo.dateEtablissement|date('d/m/Y') : '—' }}
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ paiement_dispo.typePaiement ?? '—' }}</span>
+                        </td>
+                        <td>{{ paiement_dispo.banque ?? '—' }}</td>
+                        <td>
+                            <span class="fw-semibold" style="color: var(--oti-blue);">{{ paiement_dispo.reference ?? '—' }}</span>
+                        </td>
+                        <td>{{ paiement_dispo.fournisseurs ?? '—' }}</td>
+                        <td class="text-end fw-semibold">
+                            {% if paiement_dispo.ariary is not null %}
+                                {{ paiement_dispo.ariary|number_format(0, ',', ' ') }} <small class="text-muted">Ar</small>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="text-end fw-semibold">
+                            {% if paiement_dispo.euro is not null %}
+                                €{{ paiement_dispo.euro|number_format(0, ',', ' ') }}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="text-end fw-semibold">
+                            {% if paiement_dispo.dollar is not null %}
+                                ${{ paiement_dispo.dollar|number_format(0, ',', ' ') }}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% set statut = paiement_dispo.statPaiement|lower %}
+                            {% if statut == 'payé' or statut == 'paye' %}
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25">Payé</span>
+                            {% elseif statut == 'en attente' %}
+                                <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">En attente</span>
+                            {% elseif paiement_dispo.statPaiement %}
+                                <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">{{ paiement_dispo.statPaiement }}</span>
+                            {% else %}
+                                <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{{ path('app_paiement_dispo_show', {'id': paiement_dispo.id}) }}" 
+                                   class="btn btn-sm btn-light border" title="Voir">
+                                    <i class="bi bi-eye text-primary"></i>
+                                </a>
+                                <a href="{{ path('app_paiement_dispo_edit', {'id': paiement_dispo.id}) }}" 
+                                   class="btn btn-sm btn-light border" title="Modifier">
+                                    <i class="bi bi-pencil text-warning"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 opacity-50"></i>
+                            <span class="small">Aucun paiement enregistré.</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

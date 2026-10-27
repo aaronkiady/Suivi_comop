@@ -1,0 +1,103 @@
+{% extends 'base_internal.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs | OTI{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Gestion des Utilisateurs</h1>
+        <p class="page-subtitle">Liste des comptes de la plateforme</p>
+    </div>
+    <a href="{{ path('app_admin_user_new') }}" class="btn-oti">
+        <i class="bi bi-person-plus me-2"></i> Nouvel Utilisateur
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="table-toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="search" id="user-search" class="form-control form-control-sm" placeholder="Rechercher un nom, un matricule, un email…">
+        </div>
+        <span class="text-muted small"><span id="user-count">{{ users|length }}</span> utilisateur(s)</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Matricule</th>
+                    <th>Utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr class="user-row">
+                    <td class="ps-4 fw-semibold text-muted">{{ user.matricule }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="avatar avatar-sm">{{ (user.nom|default(' '))|first|upper }}{{ (user.prenoms|default(' '))|first|upper }}</span>
+                            <span class="fw-semibold">{{ user.nom }} {{ user.prenoms }}</span>
+                        </div>
+                    </td>
+                    <td class="text-muted">{{ user.email }}</td>
+                    <td>
+                        {% for role in user.roles %}
+                            {% if role == 'ROLE_ADMIN' %}
+                                <span class="badge-soft danger">Admin</span>
+                            {% elseif role == 'ROLE_DT' %}
+                                <span class="badge-soft primary">DT</span>
+                            {% elseif role == 'ROLE_COMPTA' %}
+                                <span class="badge-soft success">Compta</span>
+                            {% else %}
+                                <span class="badge-soft secondary">User</span>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td class="text-end pe-4">
+                        <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}" class="action-btn edit" title="Modifier" data-bs-toggle="tooltip">
+                            <i class="bi bi-pencil" style="color: var(--oti-orange);"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="bi bi-people"></i>
+                            <div class="fw-semibold">Aucun utilisateur enregistré</div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+        const input = document.getElementById('user-search');
+        const rows = document.querySelectorAll('.user-row');
+        const count = document.getElementById('user-count');
+        if (!input) return;
+        input.addEventListener('input', () => {
+            const q = input.value.trim().toLowerCase();
+            let visible = 0;
+            rows.forEach(r => {
+                const show = r.textContent.toLowerCase().includes(q);
+                r.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            count.textContent = visible;
+        });
+    });
+</script>
+{% endblock %}

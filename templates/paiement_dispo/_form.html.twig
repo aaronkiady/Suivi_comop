@@ -1,0 +1,56 @@
+{{ form_start(form) }}
+    <div class="row g-3">
+        <div class="col-md-4">
+            {{ form_row(form.dateEtablissement) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.typePaiement) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.reference) }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_row(form.banque) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.societe) }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_row(form.fournisseurs) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.echeanceTraite) }}
+        </div>
+
+        <div class="col-md-4">
+            {{ form_row(form.ariary) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.euro) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.dollar) }}
+        </div>
+
+        <div class="col-md-4">
+            {{ form_row(form.statutSwift) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.statPaiement) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.piecesBc) }}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+        <a href="{{ path('app_paiement_dispo_index') }}" class="btn btn-light btn-sm px-3">
+            Annuler
+        </a>
+        <button class="btn btn-primary btn-sm px-3" style="background-color: var(--oti-blue); border-color: var(--oti-blue);">
+            <i class="bi bi-check-lg me-1"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
+{{ form_end(form) }}

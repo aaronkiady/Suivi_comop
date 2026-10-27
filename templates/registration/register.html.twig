@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription | OTI{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block body %}
+<div class="auth-card">
+    <div class="auth-logo">
+        <img src="{{ asset('images/Logo_OTI.png') }}" alt="OTI">
+    </div>
+
+    <h2 class="text-center mb-1" style="font-size: 1.5rem; color: #333;">Créer un compte</h2>
+    <p class="text-center text-muted small mb-4">Rejoignez la plateforme OTI</p>
+
+    {{ form_start(registrationForm) }}
+
+        {# Erreurs globales #}
+        {% if registrationForm.vars.errors|length > 0 %}
+            <div class="alert alert-danger">
+                {{ form_errors(registrationForm) }}
+            </div>
+        {% endif %}
+
+        {# Nom #}
+        <div class="mb-3">
+            {{ form_label(registrationForm.nom) }}
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control border-start-0'}}) }}
+            </div>
+            {{ form_errors(registrationForm.nom) }}
+        </div>
+
+        {# Prénoms #}
+        <div class="mb-3">
+            {{ form_label(registrationForm.prenoms) }}
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                {{ form_widget(registrationForm.prenoms, {'attr': {'class': 'form-control border-start-0'}}) }}
+            </div>
+            {{ form_errors(registrationForm.prenoms) }}
+        </div>
+
+        {# Matricule #}
+        <div class="mb-3">
+            {{ form_label(registrationForm.matricule) }}
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                {{ form_widget(registrationForm.matricule, {'attr': {'class': 'form-control border-start-0'}}) }}
+            </div>
+            {{ form_errors(registrationForm.matricule) }}
+        </div>
+
+        {# Email #}
+        <div class="mb-3">
+            {{ form_label(registrationForm.email) }}
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control border-start-0'}}) }}
+            </div>
+            {{ form_errors(registrationForm.email) }}
+        </div>
+
+        {# Password #}
+        <div class="mb-3">
+            {{ form_label(registrationForm.plainPassword.first) }}
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control border-start-0'}}) }}
+            </div>
+            {{ form_errors(registrationForm.plainPassword.first) }}
+        </div>
+
+        {# Confirm Password #}
+        <div class="mb-3">
+            {{ form_label(registrationForm.plainPassword.second) }}
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control border-start-0'}}) }}
+            </div>
+            {{ form_errors(registrationForm.plainPassword.second) }}
+        </div>
+
+        {# Agree Terms #}
+        <div class="form-check mb-4">
+            {{ form_widget(registrationForm.agreeTerms) }}
+            {{ form_label(registrationForm.agreeTerms, null, {'label_attr': {'class': 'form-check-label text-muted small'}}) }}
+            {{ form_errors(registrationForm.agreeTerms) }}
+        </div>
+
+        <button type="submit" class="btn-oti">
+            <i class="bi bi-person-plus me-2"></i> S'inscrire
+        </button>
+
+    {{ form_end(registrationForm) }}
+
+    <div class="text-center mt-4">
+        <span class="text-muted small">Déjà un compte ?</span>
+        <a href="{{ path('app_login') }}" class="auth-link small ms-1 fw-bold">Se connecter</a>
+    </div>
+</div>
+{% endblock %}
