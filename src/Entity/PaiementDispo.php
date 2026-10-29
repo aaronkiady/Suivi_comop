@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\PaiementDispoRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: PaiementDispoRepository::class)]
 class PaiementDispo
@@ -51,6 +52,9 @@ class PaiementDispo
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $piecesBc = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $piecesJointes = [];
 
     public function getId(): ?int
     {
@@ -210,6 +214,29 @@ class PaiementDispo
     {
         $this->piecesBc = $piecesBc;
 
+        return $this;
+    }
+
+    public function getPiecesJointes(): ?array
+    {
+        return $this->piecesJointes;
+    }
+
+    public function setPiecesJointes(?array $piecesJointes): static
+    {
+        $this->piecesJointes = $piecesJointes;
+        return $this;
+    }
+
+    public function addPieceJointe(string $filename): static
+    {
+        $this->piecesJointes[] = $filename;
+        return $this;
+    }
+
+    public function removePieceJointe(string $filename): static
+    {
+        $this->piecesJointes = array_filter($this->piecesJointes ?? [], fn($f) => $f !== $filename);
         return $this;
     }
 }

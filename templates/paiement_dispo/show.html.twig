@@ -119,13 +119,48 @@
                         {% endif %}
                     </div>
                     <div class="col-md-4">
-                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 1px; font-size: 0.7rem;">Pièces BC</small>
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="letter-spacing: 1px; font-size: 0.7rem;">Ref. BC</small>
                         <span class="small">{{ paiement_dispo.piecesBc ?? '—' }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+    <div class="col-12 mt-3">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-paperclip me-2"></i> Pièces jointes
+            </div>
+            <div class="card-body">
+                {% if paiement_dispo.piecesJointes %}
+                    <div class="d-flex flex-column gap-2">
+                        {% for fichier in paiement_dispo.piecesJointes %}
+                            <div class="d-flex align-items-center gap-2">
+                                {# Lien pour voir le fichier #}
+                                <a href="{{ asset('uploads/' ~ fichier) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-text"></i> {{ fichier|slice(0, 30) }}{% if fichier|length > 30 %}...{% endif %}
+                                </a>
+                                
+                                {# Bouton Supprimer (visible par admin) #}
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <form method="post"
+                                        action="{{ path('app_paiement_dispo_remove_file', {'id': paiement_dispo.id, 'filename': fichier}) }}"
+                                        onsubmit="return confirm('Voulez-vous vraiment supprimer ce fichier ?');"
+                                        style="display: inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_file_' ~ fichier) }}">
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <em class="text-muted">Aucune pièce jointe</em>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

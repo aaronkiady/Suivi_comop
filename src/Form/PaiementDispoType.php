@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\PaiementDispo;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -92,10 +93,19 @@ class PaiementDispoType extends AbstractType
                 'label_attr' => $labelAttr,
             ])
             ->add('piecesBc', TextType::class, [
-                'label' => 'Pièces BC',
+                'label' => 'Ref. BC',
                 'required' => false,
                 'attr' => $attr + ['placeholder' => 'Réf. pièces justificatives'],
                 'label_attr' => $labelAttr,
+            ])
+            ->add('piecesJointesFile', FileType::class, [
+                'label' => 'Pièces jointes (PDF, DOCX, images)',
+                'mapped' => false,
+                'required' => false,
+                'multiple' => true,
+                'attr' => [
+                    'accept' => '.pdf,.doc,.docx,.jpg,.jpeg,.png'
+                ],
             ])
         ;
     }

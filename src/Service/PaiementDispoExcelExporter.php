@@ -37,7 +37,7 @@ class PaiementDispoExcelExporter
             'K1' => 'Dollar',
             'L1' => 'Statut Swift',
             'M1' => 'Statut Paiement',
-            'N1' => 'Pièces BC',
+            'N1' => 'Ref. BC',
         ];
 
         foreach ($headers as $cell => $value) {

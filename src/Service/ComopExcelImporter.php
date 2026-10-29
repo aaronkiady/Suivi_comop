@@ -39,8 +39,8 @@ class ComopExcelImporter
             try {
                 $comop = new Comop();
 
-                $projet = trim((string) ($row['B'] ?? ''));
-                $refBc = trim((string) ($row['C'] ?? ''));
+                $projet = trim((string) ($row['A'] ?? ''));
+                $refBc = trim((string) ($row['B'] ?? ''));
 
                 if (empty($projet)) {
                     $errors[] = "Ligne $rowIndex : le champ 'Projet' est obligatoire.";
@@ -53,21 +53,21 @@ class ComopExcelImporter
 
                 $comop->setProjet($projet);
                 $comop->setRefBc($refBc);
-                $comop->setFournisseur($this->cleanString($row['D'] ?? null));
-                $comop->setDesignation($this->cleanString($row['E'] ?? null));
+                $comop->setFournisseur($this->cleanString($row['C'] ?? null));
+                $comop->setDesignation($this->cleanString($row['D'] ?? null));
                 
                 // ✅ Conversion propre en entier (supprime espaces, virgules, points)
-                $comop->setMontant($this->toInt($row['F'] ?? null));
-                $comop->setMontantUsd($this->toInt($row['G'] ?? null));
+                $comop->setMontant($this->toInt($row['E'] ?? null));
+                $comop->setMontantUsd($this->toInt($row['F'] ?? null));
                 
-                $comop->setStatut($this->cleanString($row['H'] ?? null));
+                $comop->setStatut($this->cleanString($row['G'] ?? null));
                 
                 // ✅ 'dt' est le nom du Directeur des Travaux, pas une date
-                $comop->setDt($this->cleanString($row['I'] ?? null));
+                $comop->setDt($this->cleanString($row['H'] ?? null));
 
                 // Gestion de la date de paiement
-                if (!empty($row['J'])) {
-                    $dateValue = $row['J'];
+                if (!empty($row['I'])) {
+                    $dateValue = $row['I'];
                     if (is_numeric($dateValue)) {
                         $comop->setDatePaiement(ExcelDate::excelToDateTimeObject((float) $dateValue));
                     } else {

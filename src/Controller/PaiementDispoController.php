@@ -19,6 +19,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/paiement/dispo')]
 final class PaiementDispoController extends AbstractController
@@ -32,13 +34,36 @@ final class PaiementDispoController extends AbstractController
     }
 
     #[Route('/new', name: 'app_paiement_dispo_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $paiementDispo = new PaiementDispo();
         $form = $this->createForm(PaiementDispoType::class, $paiementDispo);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $files = $form->get('piecesJointesFile')->getData();
+            if ($files) {
+                // On récupère les fichiers déjà existants (utile pour l'edit)
+                $filenames = $paiementDispo->getPiecesJointes() ?? [];
+                
+                foreach ($files as $file) {
+                    $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFilename = $slugger->slug($originalFilename);
+                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+
+                    try {
+                        // On déplace le fichier physique dans le dossier public/uploads
+                        $file->move($this->getParameter('uploads_directory'), $newFilename);
+                        $filenames[] = $newFilename;
+                    } catch (FileException $e) {
+                        $this->addFlash('danger', 'Erreur lors du téléchargement du fichier : ' . $originalFilename);
+                    }
+                }
+                
+                // On sauvegarde le tableau mis à jour
+                $paiementDispo->setPiecesJointes($filenames);
+            }
+
             $entityManager->persist($paiementDispo);
             $entityManager->flush();
 
@@ -60,13 +85,38 @@ final class PaiementDispoController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_paiement_dispo_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, PaiementDispo $paiementDispo, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, PaiementDispo $paiementDispo, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $form = $this->createForm(PaiementDispoType::class, $paiementDispo);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+        // GESTION DES PIÈCES JOINTES (Upload Multiple)
+        $files = $form->get('piecesJointesFile')->getData();
+        if ($files) {
+            // On récupère les fichiers déjà existants (utile pour l'edit)
+            $filenames = $paiementDispo->getPiecesJointes() ?? [];
+            
+            foreach ($files as $file) {
+                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+
+                try {
+                    // On déplace le fichier physique dans le dossier public/uploads
+                    $file->move($this->getParameter('uploads_directory'), $newFilename);
+                    $filenames[] = $newFilename;
+                } catch (FileException $e) {
+                    $this->addFlash('danger', 'Erreur lors du téléchargement du fichier : ' . $originalFilename);
+                }
+            }
+            
+            // On sauvegarde le tableau mis à jour
+            $paiementDispo->setPiecesJointes($filenames);
+        }
+
+        $entityManager->persist($paiementDispo);
+        $entityManager->flush();
 
             return $this->redirectToRoute('app_paiement_dispo_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -170,5 +220,29 @@ final class PaiementDispoController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="Modele_Import_Paiements.xlsx"');
 
         return $response;
+    }
+
+    #[Route('/paiement-dispo/{id}/remove-file/{filename}', name: 'app_paiement_dispo_remove_file', methods: ['POST'])]
+    public function removeFile(
+        PaiementDispo $paiementDispo,
+        string $filename,
+        EntityManagerInterface $em,
+        Request $request
+    ): Response {
+        if ($this->isCsrfTokenValid('delete_file_' . $filename, $request->getPayload()->getString('_token'))) {
+            // Supprimer du disque
+            $filePath = $this->getParameter('uploads_directory') . '/' . $filename;
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+
+            // Supprimer du tableau JSON
+            $paiementDispo->removePieceJointe($filename);
+            $em->flush();
+
+            $this->addFlash('success', 'Fichier supprimé avec succès.');
+        }
+
+        return $this->redirectToRoute('app_paiement_dispo_show', ['id' => $paiementDispo->getId()]);
     }
 }

@@ -97,7 +97,7 @@ final class ComopController extends AbstractController
     }
 
     #[Route('comop/{id}/edit', name: 'app_comop_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Comop $comop, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Comop $comop, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
 
         $canEditStatut = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_FINANCE');
@@ -110,7 +110,32 @@ final class ComopController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+        // GESTION DES PIÈCES JOINTES (Upload Multiple)
+        $files = $form->get('piecesJointesFile')->getData();
+        if ($files) {
+            // On récupère les fichiers déjà existants (utile pour l'edit)
+            $filenames = $comop->getPiecesJointes() ?? [];
+            
+            foreach ($files as $file) {
+                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+
+                try {
+                    // On déplace le fichier physique dans le dossier public/uploads
+                    $file->move($this->getParameter('uploads_directory'), $newFilename);
+                    $filenames[] = $newFilename;
+                } catch (FileException $e) {
+                    $this->addFlash('danger', 'Erreur lors du téléchargement du fichier : ' . $originalFilename);
+                }
+            }
+            
+            // On sauvegarde le tableau mis à jour
+            $comop->setPiecesJointes($filenames);
+        }
+
+        $entityManager->persist($comop);
+        $entityManager->flush();
 
             return $this->redirectToRoute('app_comop_index', [], Response::HTTP_SEE_OTHER);
         }

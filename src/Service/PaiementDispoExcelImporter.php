@@ -43,8 +43,8 @@ class PaiementDispoExcelImporter
                 $paiement = new PaiementDispo();
 
                 // Colonne B : Date Etablissement
-                if (!empty($row['B'])) {
-                    $dateValue = $row['B'];
+                if (!empty($row['A'])) {
+                    $dateValue = $row['A'];
                     if (is_numeric($dateValue)) {
                         $paiement->setDateEtablissement(ExcelDate::excelToDateTimeObject((float) $dateValue));
                     } else {
@@ -57,18 +57,18 @@ class PaiementDispoExcelImporter
                     }
                 }
 
-                $paiement->setTypePaiement($this->cleanString($row['C'] ?? null));
-                $paiement->setBanque($this->cleanString($row['D'] ?? null));
-                $paiement->setSociete($this->cleanString($row['E'] ?? null));
-                $paiement->setReference($this->cleanString($row['F'] ?? null));
-                $paiement->setEcheanceTraite($this->cleanString($row['G'] ?? null));
-                $paiement->setFournisseurs($this->cleanString($row['H'] ?? null));
-                $paiement->setAriary($this->toInt($row['I'] ?? null));
-                $paiement->setEuro($this->toInt($row['J'] ?? null));
-                $paiement->setDollar($this->toInt($row['K'] ?? null));
-                $paiement->setStatutSwift($this->cleanString($row['L'] ?? null));
-                $paiement->setStatPaiement($this->cleanString($row['M'] ?? null));
-                $paiement->setPiecesBc($this->cleanString($row['N'] ?? null));
+                $paiement->setTypePaiement($this->cleanString($row['B'] ?? null));
+                $paiement->setBanque($this->cleanString($row['C'] ?? null));
+                $paiement->setSociete($this->cleanString($row['D'] ?? null));
+                $paiement->setReference($this->cleanString($row['E'] ?? null));
+                $paiement->setEcheanceTraite($this->cleanString($row['F'] ?? null));
+                $paiement->setFournisseurs($this->cleanString($row['G'] ?? null));
+                $paiement->setAriary($this->toInt($row['H'] ?? null));
+                $paiement->setEuro($this->toInt($row['I'] ?? null));
+                $paiement->setDollar($this->toInt($row['J'] ?? null));
+                $paiement->setStatutSwift($this->cleanString($row['K'] ?? null));
+                $paiement->setStatPaiement($this->cleanString($row['L'] ?? null));
+                $paiement->setPiecesBc($this->cleanString($row['M'] ?? null));
 
                 $this->entityManager->persist($paiement);
                 $successCount++;

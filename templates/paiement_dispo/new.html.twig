@@ -1,11 +1,23 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_internal.html.twig' %}
 
-{% block title %}New PaiementDispo{% endblock %}
+{% block title %}Nouveau Paiement | OTI{% endblock %}
 
-{% block body %}
-    <h1>Create new PaiementDispo</h1>
+{% block page_header %}
+<div class="d-flex align-items-center mb-3">
+    <a href="{{ path('app_paiement_dispo_index') }}" class="btn btn-light btn-sm me-3" title="Retour">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+        <h4 class="mb-0 fw-bold" style="color: var(--oti-blue);">Nouveau Paiement</h4>
+        <p class="text-muted small mb-0">Enregistrer un nouveau paiement disponible</p>
+    </div>
+</div>
+{% endblock %}
 
-    {{ include('paiement_dispo/_form.html.twig') }}
-
-    <a href="{{ path('app_paiement_dispo_index') }}">back to list</a>
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        {{ include('paiement_dispo/_form.html.twig') }}
+    </div>
+</div>
 {% endblock %}
