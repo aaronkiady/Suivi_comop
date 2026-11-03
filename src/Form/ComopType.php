@@ -5,6 +5,7 @@ namespace App\Form;
 
 use App\Entity\Comop;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
@@ -40,19 +41,30 @@ class ComopType extends AbstractType
                 'attr' => $attr + ['placeholder' => 'Description de la commande'],
                 'label_attr' => $labelAttr,
             ])
+            ->add('devise', ChoiceType::class, [
+                'label' => 'Devise',
+                'choices' => [
+                    'MGA' => 'MGA',
+                    'USD' => 'USD',
+                    'EUR' => 'EUR',
+                ],
+                'attr' => $attr,
+                'label_attr' => $labelAttr,
+            ])
             ->add('montant', MoneyType::class, [
-                'label' => 'Montant (MGA)',
-                'currency' => 'MGA',
+                'label' => 'Montant',
+                'currency' => false,
                 'divisor' => 1,
                 'attr' => $attr,
                 'label_attr' => $labelAttr,
             ])
-            ->add('montantUsd', MoneyType::class, [
-                'label' => 'Montant (USD)',
-                'currency' => 'USD',
+            ->add('montantPaye', MoneyType::class, [
+                'label' => 'Montant déjà payé',
+                'currency' => false,
                 'divisor' => 1,
                 'attr' => $attr,
                 'label_attr' => $labelAttr,
+                'required' => false,
             ])
             ->add('dt', TextType::class, [
                 'label' => 'Directeur des Travaux',
@@ -71,12 +83,9 @@ class ComopType extends AbstractType
                 'mapped' => false,
                 'required' => false,
                 'multiple' => true,
-                'attr' => [
-                    'accept' => '.pdf,.doc,.docx,.jpg,.jpeg,.png'
-                ],
+                'attr' => ['accept' => '.pdf,.doc,.docx,.jpg,.jpeg,.png'],
             ]);
-            
-        // ⚠️ Condition : n'ajoute le champ 'statut' QUE si l'option est à true
+
         if ($options['can_edit_statut']) {
             $builder->add('statut', TextType::class, [
                 'label' => 'Statut',
@@ -90,7 +99,7 @@ class ComopType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Comop::class,
-            'can_edit_statut' => false, // Valeur par défaut : le champ est masqué
+            'can_edit_statut' => false,
         ]);
     }
 }

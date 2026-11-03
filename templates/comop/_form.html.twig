@@ -12,23 +12,34 @@
     {# ---------- Montants ---------- #}
     <div class="form-section-title"><i class="bi bi-cash-stack"></i> Montants</div>
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-md-4">
+            {{ form_row(form.devise) }}
+        </div>
+        <div class="col-md-4">
             {{ form_label(form.montant) }}
             <div class="input-group">
                 {{ form_widget(form.montant) }}
-                <span class="input-group-text">MGA</span>
+                <span class="input-group-text devise-label">{{ comop.devise|default('MGA') }}</span>
             </div>
             {{ form_errors(form.montant) }}
-            {{ form_help(form.montant) }}
         </div>
-        <div class="col-md-6">
-            {{ form_label(form.montantUsd) }}
+        <div class="col-md-4">
+            {{ form_label(form.montantPaye) }}
             <div class="input-group">
-                {{ form_widget(form.montantUsd) }}
-                <span class="input-group-text">USD</span>
+                {{ form_widget(form.montantPaye) }}
+                <span class="input-group-text devise-label">{{ comop.devise|default('MGA') }}</span>
             </div>
-            {{ form_errors(form.montantUsd) }}
-            {{ form_help(form.montantUsd) }}
+            {{ form_errors(form.montantPaye) }}
+        </div>
+    </div>
+
+    {# ---------- Reste à payer (calculé, en lecture seule) ---------- #}
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <label class="form-label">Reste à payer (calculé)</label>
+            <input type="text" class="form-control" readonly
+                   id="resteAPayer"
+                   value="{{ comop.resteAPayer ?? '' }}">
         </div>
     </div>
 
@@ -48,4 +59,33 @@
             <i class="bi bi-check-lg me-2"></i> {{ button_label|default('Enregistrer') }}
         </button>
     </div>
+
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const montantEl = document.querySelector('[name$="[montant]"]');
+    const payeEl    = document.querySelector('[name$="[montantPaye]"]');
+    const deviseEl  = document.querySelector('[name$="[devise]"]');
+    const resteEl   = document.getElementById('resteAPayer');
+
+    function updateReste() {
+        const m = parseFloat(montantEl?.value || 0);
+        const p = parseFloat(payeEl?.value    || 0);
+        resteEl.value = Math.max(0, m - p);
+    }
+
+    function updateDeviseLabels() {
+        document.querySelectorAll('.devise-label').forEach(el => {
+            el.textContent = deviseEl.value;
+        });
+    }
+
+    montantEl?.addEventListener('input', updateReste);
+    payeEl?.addEventListener('input', updateReste);
+    deviseEl?.addEventListener('change', function () {
+        updateDeviseLabels();
+        updateReste();
+    });
+});
+</script>

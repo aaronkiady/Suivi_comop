@@ -16,28 +16,50 @@ class ComopRepository extends ServiceEntityRepository
         parent::__construct($registry, Comop::class);
     }
 
-//    /**
-//     * @return Comop[] Returns an array of Comop objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Recherche avec filtres optionnels : statut et plage de dates d'insertion.
+     *
+     * @return Comop[]
+     */
+    public function findByFilters(?string $statut = null, ?\DateTimeInterface $dateDebut = null, ?\DateTimeInterface $dateFin = null): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->orderBy('c.dateInsertion', 'DESC');
 
-//    public function findOneBySomeField($value): ?Comop
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        if ($statut !== null && $statut !== '') {
+            $qb->andWhere('c.statut = :statut')
+               ->setParameter('statut', $statut);
+        }
+
+        if ($dateDebut !== null) {
+            $qb->andWhere('c.dateInsertion >= :dateDebut')
+               ->setParameter('dateDebut', $dateDebut->format('Y-m-d 00:00:00'));
+        }
+
+        if ($dateFin !== null) {
+            $qb->andWhere('c.dateInsertion <= :dateFin')
+               ->setParameter('dateFin', $dateFin->format('Y-m-d 23:59:59'));
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Liste des statuts distincts (pour le select du filtre).
+     *
+     * @return string[]
+     */
+    public function findDistinctStatuts(): array
+    {
+        $result = $this->createQueryBuilder('c')
+            ->select('DISTINCT c.statut')
+            ->andWhere('c.statut IS NOT NULL')
+            ->andWhere('c.statut != :empty')
+            ->setParameter('empty', '')
+            ->orderBy('c.statut', 'ASC')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($result, 'statut');
+    }
 }

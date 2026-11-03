@@ -23,7 +23,9 @@
 {% endblock %}
 
 {% block content %}
-{% set total_mga = comops|reduce((carry, c) => carry + c.montant, 0) %}
+{% set total_mga = comops|filter(c => c.devise == 'MGA')|reduce((carry, c) => carry + (c.montant ?? 0), 0) %}
+{% set total_usd = comops|filter(c => c.devise == 'USD')|reduce((carry, c) => carry + (c.montant ?? 0), 0) %}
+{% set total_eur = comops|filter(c => c.devise == 'EUR')|reduce((carry, c) => carry + (c.montant ?? 0), 0) %}
 {% set nb_payes = comops|filter(c => (c.statut|lower) in ['payé', 'paye'])|length %}
 {% set nb_attente = comops|filter(c => (c.statut|lower) == 'en attente')|length %}
 
@@ -42,7 +44,15 @@
             <div class="stat-icon orange"><i class="bi bi-cash-stack"></i></div>
             <div>
                 <div class="stat-label">Montant cumulé</div>
-                <div class="stat-value">{{ total_mga|number_format(0, ',', ' ') }} <small class="fs-6 text-muted fw-semibold">MGA</small></div>
+                <div class="stat-value">
+                    {{ total_mga|number_format(0, ',', ' ') }} <small class="fs-6 text-muted fw-semibold">MGA</small>
+                </div>
+                {% if total_usd > 0 %}
+                    <div class="small text-muted">{{ total_usd|number_format(0, ',', ' ') }} USD</div>
+                {% endif %}
+                {% if total_eur > 0 %}
+                    <div class="small text-muted">{{ total_eur|number_format(0, ',', ' ') }} EUR</div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -67,11 +77,30 @@
 </div>
 
 <div class="card">
-    <div class="table-toolbar">
+    <div class="table-toolbar d-flex flex-wrap gap-2 align-items-center">
         <div class="search-box">
             <i class="bi bi-search"></i>
             <input type="search" id="comop-search" class="form-control form-control-sm" placeholder="Rechercher un projet, un fournisseur, une référence…">
         </div>
+
+        {# ---------- Filtres ---------- #}
+        <form method="get" action="{{ path('app_comop_index') }}" class="d-flex flex-wrap gap-2 align-items-center ms-auto">
+            <select name="statut" class="form-select form-select-sm" style="width: auto;">
+                <option value="">— Tous statuts —</option>
+                {% for s in statuts %}
+                    <option value="{{ s }}" {{ currentStatut == s ? 'selected' : '' }}>{{ s }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="dateDebut" class="form-control form-control-sm" style="width: auto;"
+                   value="{{ currentDateDebut }}" title="Date d'insertion (début)">
+            <input type="date" name="dateFin" class="form-control form-control-sm" style="width: auto;"
+                   value="{{ currentDateFin }}" title="Date d'insertion (fin)">
+            <button type="submit" class="btn btn-sm btn-primary" style="background-color: var(--oti-blue); border-color: var(--oti-blue);">
+                <i class="bi bi-funnel me-1"></i> Filtrer
+            </button>
+            <a href="{{ path('app_comop_index') }}" class="btn btn-sm btn-outline-secondary">Réinitialiser</a>
+        </form>
+
         <span class="text-muted small"><span id="comop-count">{{ comops|length }}</span> résultat(s)</span>
     </div>
 
@@ -82,9 +111,13 @@
                     <th class="ps-4">Réf. BC</th>
                     <th>Projet</th>
                     <th>Fournisseur</th>
+                    <th>Devise</th>
                     <th class="text-end">Montant</th>
+                    <th class="text-end">Payé</th>
+                    <th class="text-end">Reste à payer</th>
                     <th>Statut</th>
                     <th>Paiement</th>
+                    <th>Date d'insertion</th>
                     <th class="text-end pe-4">Actions</th>
                 </tr>
             </thead>
@@ -96,14 +129,28 @@
                     </td>
                     <td>{{ comop.projet }}</td>
                     <td class="text-muted">{{ comop.fournisseur }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ comop.devise }}</span></td>
                     <td class="text-end">
                         <span class="fw-semibold">{{ comop.montant|number_format(0, ',', ' ') }}</span>
-                        <small class="text-muted">MGA</small>
+                        <small class="text-muted">{{ comop.devise }}</small>
+                    </td>
+                    <td class="text-end text-muted">
+                        {{ comop.montantPaye is not null ? comop.montantPaye|number_format(0, ',', ' ') : '—' }}
+                    </td>
+                    <td class="text-end">
+                        <span class="fw-semibold">{{ comop.resteAPayer is not null ? comop.resteAPayer|number_format(0, ',', ' ') : '—' }}</span>
                     </td>
                     <td>{{ include('comop/_statut_badge.html.twig', {statut: comop.statut}) }}</td>
                     <td class="text-muted small">
                         {% if comop.datePaiement %}
                             <i class="bi bi-calendar3 me-1"></i>{{ comop.datePaiement|date('d/m/Y') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">
+                        {% if comop.dateInsertion %}
+                            <i class="bi bi-clock-history me-1"></i>{{ comop.dateInsertion|date('d/m/Y H:i') }}
                         {% else %}
                             —
                         {% endif %}
@@ -121,7 +168,7 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="7">
+                    <td colspan="11">
                         <div class="empty-state">
                             <i class="bi bi-inbox"></i>
                             <div class="fw-semibold mb-1">Aucun Comop pour le moment</div>

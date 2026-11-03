@@ -26,10 +26,21 @@ final class ComopController extends AbstractController
     }
 
     #[Route('comop/index', name: 'app_comop_index', methods: ['GET'])]
-    public function index(ComopRepository $comopRepository): Response
+    public function index(Request $request, ComopRepository $comopRepository): Response
     {
+        $statut    = $request->query->get('statut');
+        $dateDebut = $request->query->get('dateDebut');
+        $dateFin   = $request->query->get('dateFin');
+
+        $dateDebutObj = $dateDebut ? new \DateTime($dateDebut) : null;
+        $dateFinObj   = $dateFin   ? new \DateTime($dateFin)   : null;
+
         return $this->render('comop/index.html.twig', [
-            'comops' => $comopRepository->findAll(),
+            'comops'          => $comopRepository->findByFilters($statut, $dateDebutObj, $dateFinObj),
+            'statuts'         => $comopRepository->findDistinctStatuts(),
+            'currentStatut'   => $statut,
+            'currentDateDebut'=> $dateDebut,
+            'currentDateFin'  => $dateFin,
         ]);
     }
 
@@ -38,43 +49,35 @@ final class ComopController extends AbstractController
     {
         $comop = new Comop();
 
-        // On vérifie si l'utilisateur a le droit de modifier le statut
         $canEditStatut = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_FINANCE');
 
         $form = $this->createForm(ComopType::class, $comop, [
             'can_edit_statut' => $canEditStatut,
         ]);
 
-        //$form = $this->createForm(ComopType::class, $comop);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
             $files = $form->get('piecesJointesFile')->getData();
             if ($files) {
-                // On récupère les fichiers déjà existants (utile pour l'edit)
                 $filenames = $comop->getPiecesJointes() ?? [];
-                
+
                 foreach ($files as $file) {
                     $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = $slugger->slug($originalFilename);
                     $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
 
                     try {
-                        // On déplace le fichier physique dans le dossier public/uploads
                         $file->move($this->getParameter('uploads_directory'), $newFilename);
                         $filenames[] = $newFilename;
                     } catch (FileException $e) {
                         $this->addFlash('danger', 'Erreur lors du téléchargement du fichier : ' . $originalFilename);
                     }
                 }
-                
-                // On sauvegarde le tableau mis à jour
+
                 $comop->setPiecesJointes($filenames);
             }
-
-            $entityManager->persist($comop);
-            $entityManager->flush();
 
             $entityManager->persist($comop);
             $entityManager->flush();
@@ -99,43 +102,37 @@ final class ComopController extends AbstractController
     #[Route('comop/{id}/edit', name: 'app_comop_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Comop $comop, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
-
         $canEditStatut = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_FINANCE');
 
         $form = $this->createForm(ComopType::class, $comop, [
             'can_edit_statut' => $canEditStatut,
         ]);
 
-        //$form = $this->createForm(ComopType::class, $comop);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-        // GESTION DES PIÈCES JOINTES (Upload Multiple)
-        $files = $form->get('piecesJointesFile')->getData();
-        if ($files) {
-            // On récupère les fichiers déjà existants (utile pour l'edit)
-            $filenames = $comop->getPiecesJointes() ?? [];
-            
-            foreach ($files as $file) {
-                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+            $files = $form->get('piecesJointesFile')->getData();
+            if ($files) {
+                $filenames = $comop->getPiecesJointes() ?? [];
 
-                try {
-                    // On déplace le fichier physique dans le dossier public/uploads
-                    $file->move($this->getParameter('uploads_directory'), $newFilename);
-                    $filenames[] = $newFilename;
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Erreur lors du téléchargement du fichier : ' . $originalFilename);
+                foreach ($files as $file) {
+                    $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFilename = $slugger->slug($originalFilename);
+                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+
+                    try {
+                        $file->move($this->getParameter('uploads_directory'), $newFilename);
+                        $filenames[] = $newFilename;
+                    } catch (FileException $e) {
+                        $this->addFlash('danger', 'Erreur lors du téléchargement du fichier : ' . $originalFilename);
+                    }
                 }
-            }
-            
-            // On sauvegarde le tableau mis à jour
-            $comop->setPiecesJointes($filenames);
-        }
 
-        $entityManager->persist($comop);
-        $entityManager->flush();
+                $comop->setPiecesJointes($filenames);
+            }
+
+            $entityManager->persist($comop);
+            $entityManager->flush();
 
             return $this->redirectToRoute('app_comop_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -161,7 +158,6 @@ final class ComopController extends AbstractController
     public function exportExcel(ComopRepository $comopRepository, ComopExcelExporter $exporter): Response
     {
         $comops = $comopRepository->findAll();
-        
         return $exporter->export($comops);
     }
 
@@ -174,12 +170,11 @@ final class ComopController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $file */
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
             $file = $form->get('file')->getData();
 
             $report = $importer->import($file);
 
-            // Message flash basé sur le résultat
             if ($report['success'] > 0) {
                 $this->addFlash('success', sprintf(
                     '%d ligne(s) importée(s) avec succès.',
@@ -212,13 +207,11 @@ final class ComopController extends AbstractController
         Request $request
     ): Response {
         if ($this->isCsrfTokenValid('delete_file_' . $filename, $request->getPayload()->getString('_token'))) {
-            // Supprimer du disque
             $filePath = $this->getParameter('uploads_directory') . '/' . $filename;
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
 
-            // Supprimer du tableau JSON
             $comop->removePieceJointe($filename);
             $em->flush();
 
