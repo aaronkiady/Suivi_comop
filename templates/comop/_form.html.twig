@@ -1,57 +1,76 @@
 {{ form_start(form) }}
 
     {# ---------- Commande ---------- #}
-    <div class="form-section-title"><i class="bi bi-folder2-open"></i> Commande</div>
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">{{ form_row(form.projet) }}</div>
-        <div class="col-md-6">{{ form_row(form.refBc) }}</div>
-        <div class="col-md-6">{{ form_row(form.fournisseur) }}</div>
-        <div class="col-md-6">{{ form_row(form.designation) }}</div>
-    </div>
-
-    {# ---------- Montants ---------- #}
-    <div class="form-section-title"><i class="bi bi-cash-stack"></i> Montants</div>
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            {{ form_row(form.devise) }}
+    {% if form.projet is defined %}
+        <div class="form-section-title"><i class="bi bi-folder2-open"></i> Commande</div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">{{ form_row(form.projet) }}</div>
+            <div class="col-md-6">{{ form_row(form.refBc) }}</div>
+            <div class="col-md-6">{{ form_row(form.fournisseur) }}</div>
+            <div class="col-md-6">{{ form_row(form.designation) }}</div>
         </div>
-        <div class="col-md-4">
-            {{ form_label(form.montant) }}
-            <div class="input-group">
-                {{ form_widget(form.montant) }}
-                <span class="input-group-text devise-label">{{ comop.devise|default('MGA') }}</span>
-            </div>
-            {{ form_errors(form.montant) }}
-        </div>
-        <div class="col-md-4">
-            {{ form_label(form.montantPaye) }}
-            <div class="input-group">
-                {{ form_widget(form.montantPaye) }}
-                <span class="input-group-text devise-label">{{ comop.devise|default('MGA') }}</span>
-            </div>
-            {{ form_errors(form.montantPaye) }}
-        </div>
-    </div>
-
-    {# ---------- Reste à payer (calculé, en lecture seule) ---------- #}
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <label class="form-label">Reste à payer (calculé)</label>
-            <input type="text" class="form-control" readonly
-                   id="resteAPayer"
-                   value="{{ comop.resteAPayer ?? '' }}">
-        </div>
-    </div>
-
-    {# ---------- Suivi ---------- #}
-    <div class="form-section-title"><i class="bi bi-calendar-check"></i> Suivi &amp; paiement</div>
-    <div class="row g-3">
-    {% if is_granted('ROLE_FINANCE') or is_granted('ROLE_ADMIN') %}
-        <div class="col-md-4">{{ form_row(form.statut) }}</div>
     {% endif %}
-        <div class="col-md-4">{{ form_row(form.dt) }}</div>
-        <div class="col-md-4">{{ form_row(form.datePaiement) }}</div>
-    </div>
+
+    {# ---------- Finances ---------- #}
+    {% if form.montant is defined %}
+        <div class="form-section-title"><i class="bi bi-cash-stack"></i> Finances</div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                {{ form_row(form.devise) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_label(form.montant) }}
+                <div class="input-group">
+                    {{ form_widget(form.montant) }}
+                    <span class="input-group-text devise-label">{{ comop.devise|default('MGA') }}</span>
+                </div>
+                {{ form_errors(form.montant) }}
+            </div>
+            <div class="col-md-4">
+                {{ form_label(form.montantPaye) }}
+                <div class="input-group">
+                    {{ form_widget(form.montantPaye) }}
+                    <span class="input-group-text devise-label">{{ comop.devise|default('MGA') }}</span>
+                </div>
+                {{ form_errors(form.montantPaye) }}
+            </div>
+        </div>
+
+        {# ---------- Reste à payer (calculé, en lecture seule) ---------- #}
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Reste à payer (calculé)</label>
+                <input type="text" class="form-control" readonly
+                       id="resteAPayer"
+                       value="{{ comop.resteAPayer ?? '' }}">
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">{{ form_row(form.statut) }}</div>
+            <div class="col-md-6">{{ form_row(form.datePaiement) }}</div>
+        </div>
+    {% endif %}
+
+    {# ---------- Suivi (DT uniquement) ---------- #}
+    {% if form.dt is defined %}
+        <div class="form-section-title"><i class="bi bi-person-badge"></i> Suivi</div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">{{ form_row(form.dt) }}</div>
+        </div>
+    {% endif %}
+
+    {# ---------- Pièces jointes ---------- #}
+    {% if form.piecesJointesFile is defined %}
+        <div class="form-section-title"><i class="bi bi-paperclip"></i> Pièces jointes</div>
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                {{ form_label(form.piecesJointesFile) }}
+                {{ form_widget(form.piecesJointesFile) }}
+                {{ form_errors(form.piecesJointesFile) }}
+            </div>
+        </div>
+    {% endif %}
 
     <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
         <a href="{{ path('app_comop_index') }}" class="btn-outline-oti">Annuler</a>
@@ -70,14 +89,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const resteEl   = document.getElementById('resteAPayer');
 
     function updateReste() {
+        if (!resteEl) return;
         const m = parseFloat(montantEl?.value || 0);
         const p = parseFloat(payeEl?.value    || 0);
         resteEl.value = Math.max(0, m - p);
     }
 
     function updateDeviseLabels() {
+        if (!deviseEl) return;
+        const devise = deviseEl.value || 'MGA';
         document.querySelectorAll('.devise-label').forEach(el => {
-            el.textContent = deviseEl.value;
+            el.textContent = devise;
         });
     }
 
@@ -87,5 +109,8 @@ document.addEventListener('DOMContentLoaded', function () {
         updateDeviseLabels();
         updateReste();
     });
+
+    updateDeviseLabels();
+    updateReste();
 });
 </script>

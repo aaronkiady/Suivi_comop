@@ -20,7 +20,7 @@
                 <i class="bi bi-receipt-cutoff"></i>
                 <span>Comops</span>
             </a>
-            {% if is_granted('ROLE_FINANCE') or is_granted('ROLE_ADMIN') %}
+            {% if is_granted('ROLE_COMPTA') or is_granted('ROLE_ADMIN') %}
             <div class="sidebar-label">Finance</div>
             <a href="{{ path('app_paiement_dispo_index') }}"
                class="sidebar-link {% if app.request.attributes.get('_route') starts with 'app_paiement_dispo' %}active{% endif %}">

@@ -16,10 +16,10 @@ class Comop
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $projet = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -47,13 +47,13 @@ class Comop
      * Devise du montant : MGA, USD ou EUR.
      */
     #[ORM\Column(length: 3, nullable: true)]
-    private ?string $devise = 'MGA';
+    private ?string $devise = null;
 
     /**
      * Montant déjà payé, dans la même devise que $montant.
      */
     #[ORM\Column(type: 'bigint', nullable: true)]
-    private ?int $montantPaye = 0;
+    private ?int $montantPaye = null;
 
     /**
      * Reste à payer — recalculé automatiquement via updateResteAPayer().
@@ -96,7 +96,7 @@ class Comop
         return $this->projet;
     }
 
-    public function setProjet(string $projet): static
+    public function setProjet(?string $projet): static
     {
         $this->projet = $projet;
 
@@ -108,7 +108,7 @@ class Comop
         return $this->refBc;
     }
 
-    public function setRefBc(string $refBc): static
+    public function setRefBc(?string $refBc): static
     {
         $this->refBc = $refBc;
 
@@ -236,7 +236,7 @@ class Comop
         return $this->dateInsertion;
     }
 
-    public function setDateInsertion(DateTimeImmutable $dateInsertion): static
+    public function setDateInsertion(?DateTimeImmutable $dateInsertion): static
     {
         $this->dateInsertion = $dateInsertion;
 

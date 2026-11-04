@@ -19,6 +19,25 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 //#[Route('/comop')]
 final class ComopController extends AbstractController
 {
+    /**
+     * Définit les permissions d'affichage/édition des champs du formulaire
+     * selon le rôle de l'utilisateur connecté (cf. Matrice Excel).
+     */
+    private function getFormPermissions(): array
+    {
+        $isAdmin   = $this->isGranted('ROLE_ADMIN');
+        $isDt      = $this->isGranted('ROLE_DT');
+        $isFinance = $this->isGranted('ROLE_COMPTA');
+
+        return [
+            // Groupe 1 : Commande (projet, designation, refBc, fournisseur, dt)
+            'can_edit_commande' => $isAdmin || $isDt,
+            
+            // Groupe 2 : Finances (montant, devise, montantPaye, statut, datePaiement)
+            'can_edit_finances' => $isAdmin || $isFinance,
+        ];
+    }
+
     #[Route('/', name: 'app_home', methods: ['GET'])]
     public function home(): Response
     {
@@ -47,18 +66,17 @@ final class ComopController extends AbstractController
     #[Route('comop/new', name: 'app_comop_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        // Seul un DT ou un Admin peut créer un Comop complet
+        if (!$this->isGranted('ROLE_DT') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas le droit de créer un Comop.');
+        }
+
         $comop = new Comop();
 
-        $canEditStatut = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_FINANCE');
-
-        $form = $this->createForm(ComopType::class, $comop, [
-            'can_edit_statut' => $canEditStatut,
-        ]);
-
+        $form = $this->createForm(ComopType::class, $comop, $this->getFormPermissions());
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
             $files = $form->get('piecesJointesFile')->getData();
             if ($files) {
                 $filenames = $comop->getPiecesJointes() ?? [];
@@ -102,12 +120,10 @@ final class ComopController extends AbstractController
     #[Route('comop/{id}/edit', name: 'app_comop_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Comop $comop, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
-        $canEditStatut = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_FINANCE');
-
-        $form = $this->createForm(ComopType::class, $comop, [
-            'can_edit_statut' => $canEditStatut,
-        ]);
-
+        // Pas de restriction ici : tout le monde peut accéder à la page edit.
+        // Les champs seront filtrés dynamiquement selon le rôle.
+        
+        $form = $this->createForm(ComopType::class, $comop, $this->getFormPermissions());
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -146,6 +162,10 @@ final class ComopController extends AbstractController
     #[Route('comop/{id}', name: 'app_comop_delete', methods: ['POST'])]
     public function delete(Request $request, Comop $comop, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->isGranted('ROLE_DT') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas le droit de supprimer ce Comop.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$comop->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($comop);
             $entityManager->flush();
@@ -162,24 +182,18 @@ final class ComopController extends AbstractController
     }
 
     #[Route('comop/import/excel', name: 'app_comop_import_excel', methods: ['GET', 'POST'])]
-    public function importExcel(
-        Request $request,
-        ComopExcelImporter $importer
-    ): Response {
+    public function importExcel(Request $request, ComopExcelImporter $importer): Response
+    {
         $form = $this->createForm(ComopImportType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
             $file = $form->get('file')->getData();
-
             $report = $importer->import($file);
 
             if ($report['success'] > 0) {
-                $this->addFlash('success', sprintf(
-                    '%d ligne(s) importée(s) avec succès.',
-                    $report['success']
-                ));
+                $this->addFlash('success', sprintf('%d ligne(s) importée(s) avec succès.', $report['success']));
             }
 
             if (!empty($report['errors'])) {
@@ -194,18 +208,12 @@ final class ComopController extends AbstractController
             return $this->redirectToRoute('app_comop_index');
         }
 
-        return $this->render('comop/import.html.twig', [
-            'form' => $form,
-        ]);
+        return $this->render('comop/import.html.twig', ['form' => $form]);
     }
 
     #[Route('/comop/{id}/remove-file/{filename}', name: 'app_comop_remove_file', methods: ['POST'])]
-    public function removeFile(
-        Comop $comop,
-        string $filename,
-        EntityManagerInterface $em,
-        Request $request
-    ): Response {
+    public function removeFile(Comop $comop, string $filename, EntityManagerInterface $em, Request $request): Response
+    {
         if ($this->isCsrfTokenValid('delete_file_' . $filename, $request->getPayload()->getString('_token'))) {
             $filePath = $this->getParameter('uploads_directory') . '/' . $filename;
             if (file_exists($filePath)) {
@@ -214,7 +222,6 @@ final class ComopController extends AbstractController
 
             $comop->removePieceJointe($filename);
             $em->flush();
-
             $this->addFlash('success', 'Fichier supprimé avec succès.');
         }
 
