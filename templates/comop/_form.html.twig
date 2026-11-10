@@ -8,16 +8,22 @@
             <div class="col-md-6">{{ form_row(form.refBc) }}</div>
             <div class="col-md-6">{{ form_row(form.fournisseur) }}</div>
             <div class="col-md-6">{{ form_row(form.designation) }}</div>
+            <div class="col-md-6">{{ form_row(form.dt) }}</div>
         </div>
     {% endif %}
 
-    {# ---------- Finances ---------- #}
-    {% if form.montant is defined %}
-        <div class="form-section-title"><i class="bi bi-cash-stack"></i> Finances</div>
+    {# ---------- Montant & Devise ---------- #}
+    {% if form.montant is defined or form.devise is defined %}
+        <div class="form-section-title"><i class="bi bi-cash-stack"></i> Montant &amp; Devise</div>
         <div class="row g-3 mb-4">
+            
+            {% if form.devise is defined %}
             <div class="col-md-4">
                 {{ form_row(form.devise) }}
             </div>
+            {% endif %}
+            
+            {% if form.montant is defined %}
             <div class="col-md-4">
                 {{ form_label(form.montant) }}
                 <div class="input-group">
@@ -26,37 +32,46 @@
                 </div>
                 {{ form_errors(form.montant) }}
             </div>
-            <div class="col-md-4">
-                {{ form_label(form.montantPaye) }}
-                <div class="input-group">
-                    {{ form_widget(form.montantPaye) }}
-                    <span class="input-group-text devise-label">{{ comop.devise|default('MGA') }}</span>
-                </div>
-                {{ form_errors(form.montantPaye) }}
-            </div>
-        </div>
+            {% endif %}
 
-        {# ---------- Reste à payer (calculé, en lecture seule) ---------- #}
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
+            {# On affiche le reste à payer si on peut voir le montant #}
+            {% if form.montant is defined %}
+            <div class="col-md-4">
                 <label class="form-label">Reste à payer (calculé)</label>
                 <input type="text" class="form-control" readonly
                        id="resteAPayer"
                        value="{{ comop.resteAPayer ?? '' }}">
             </div>
-        </div>
-
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">{{ form_row(form.statut) }}</div>
-            <div class="col-md-6">{{ form_row(form.datePaiement) }}</div>
+            {% endif %}
         </div>
     {% endif %}
 
-    {# ---------- Suivi (DT uniquement) ---------- #}
-    {% if form.dt is defined %}
-        <div class="form-section-title"><i class="bi bi-person-badge"></i> Suivi</div>
+    {# ---------- Finances (Payé, Statut, Date) ---------- #}
+    {% if form.montantPaye is defined or form.statut is defined %}
+        <div class="form-section-title"><i class="bi bi-wallet2"></i> Finances</div>
         <div class="row g-3 mb-4">
-            <div class="col-md-6">{{ form_row(form.dt) }}</div>
+            {% if form.montantPaye is defined %}
+            <div class="col-md-4">
+                {{ form_label(form.montantPaye) }}
+                <div class="input-group">
+                    {{ form_widget(form.montantPaye) }}
+                    <span class="input-group-text">{{ comop.devise|default('MGA') }}</span>
+                </div>
+                {{ form_errors(form.montantPaye) }}
+            </div>
+            {% endif %}
+
+            {% if form.statut is defined %}
+            <div class="col-md-4">
+                {{ form_row(form.statut) }}
+            </div>
+            {% endif %}
+
+            {% if form.datePaiement is defined %}
+            <div class="col-md-4">
+                {{ form_row(form.datePaiement) }}
+            </div>
+            {% endif %}
         </div>
     {% endif %}
 

@@ -57,29 +57,37 @@ class ComopType extends AbstractType
                 ]);
         }
 
-        // ---------- Groupe 2 : Finances (ROLE_COMPTA, ROLE_ADMIN) ----------
+        // ---------- Montant (ROLE_DT, ROLE_ADMIN) ----------
+        if ($options['can_edit_montant']) {
+            $builder->add('montant', MoneyType::class, [
+                'label'      => 'Montant',
+                'currency'   => false,
+                'divisor'    => 1,
+                'attr'       => $attr,
+                'label_attr' => $labelAttr,
+                'required'   => false,
+            ]);
+        }
+
+        // ---------- Devise (ROLE_DT, ROLE_ADMIN) ----------
+        if ($options['can_edit_devise']) {
+            $builder->add('devise', ChoiceType::class, [
+                'label'       => 'Devise',
+                'choices'     => [
+                    'MGA' => 'MGA',
+                    'USD' => 'USD',
+                    'EUR' => 'EUR',
+                ],
+                'placeholder' => '— Choisir —',
+                'required'    => false,
+                'attr'        => ['class' => 'form-select'],
+                'label_attr'  => $labelAttr,
+            ]);
+        }
+
+        // ---------- Finances (ROLE_FINANCE, ROLE_ADMIN) ----------
         if ($options['can_edit_finances']) {
             $builder
-                ->add('devise', ChoiceType::class, [
-                    'label'       => 'Devise',
-                    'choices'     => [
-                        'MGA' => 'MGA',
-                        'USD' => 'USD',
-                        'EUR' => 'EUR',
-                    ],
-                    'placeholder' => '— Choisir —',
-                    'required'    => false,
-                    'attr'        => ['class' => 'form-select'],
-                    'label_attr'  => $labelAttr,
-                ])
-                ->add('montant', MoneyType::class, [
-                    'label'      => 'Montant',
-                    'currency'   => false,
-                    'divisor'    => 1,
-                    'attr'       => $attr,
-                    'label_attr' => $labelAttr,
-                    'required'   => false,
-                ])
                 ->add('montantPaye', MoneyType::class, [
                     'label'      => 'Montant déjà payé',
                     'currency'   => false,
@@ -103,7 +111,7 @@ class ComopType extends AbstractType
                 ]);
         }
 
-        // ---------- Groupe 3 : Pièces jointes (Tout le monde) ----------
+        // ---------- Pièces jointes (Tout le monde) ----------
         $builder->add('piecesJointesFile', FileType::class, [
             'label'    => 'Pièces jointes (PDF, DOCX, images)',
             'mapped'   => false,
@@ -118,6 +126,8 @@ class ComopType extends AbstractType
         $resolver->setDefaults([
             'data_class'        => Comop::class,
             'can_edit_commande' => false,
+            'can_edit_montant'  => false,
+            'can_edit_devise'   => false,
             'can_edit_finances' => false,
         ]);
     }
