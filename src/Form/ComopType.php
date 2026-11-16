@@ -85,7 +85,7 @@ class ComopType extends AbstractType
             ]);
         }
 
-        // ---------- Finances (ROLE_FINANCE, ROLE_ADMIN) ----------
+        // ---------- Finances (ROLE_COMPTA, ROLE_ADMIN) ----------
         if ($options['can_edit_finances']) {
             $builder
                 ->add('montantPaye', MoneyType::class, [

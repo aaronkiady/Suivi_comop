@@ -27,7 +27,7 @@ final class ComopController extends AbstractController
     {
         $isAdmin   = $this->isGranted('ROLE_ADMIN');
         $isDt      = $this->isGranted('ROLE_DT');
-        $isFinance = $this->isGranted('ROLE_FINANCE');
+        $isFinance = $this->isGranted('ROLE_COMPTA');
 
         return [
             // Commande : projet, designation, refBc, fournisseur, dt (DT & ADMIN)
