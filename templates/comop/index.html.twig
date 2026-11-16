@@ -8,6 +8,7 @@
         <h4 class="mb-0 fw-bold" style="color: var(--oti-blue);">Liste des Comops</h4>
         <p class="text-muted small mb-0">Gestion et suivi des commandes</p>
     </div>
+    {% if is_granted('ROLE_DT') or is_granted('ROLE_ADMIN') %}
     <div class="d-flex gap-2">
         <a href="{{ path('app_comop_import_excel') }}" class="btn btn-outline-primary btn-sm px-3" style="color: var(--oti-blue); border-color: var(--oti-blue);">
             <i class="bi bi-upload me-1"></i> Importer
@@ -19,6 +20,7 @@
             <i class="bi bi-plus-lg me-1"></i> Nouveau
         </a>
     </div>
+    {% endif %}
 </div>
 {% endblock %}
 
